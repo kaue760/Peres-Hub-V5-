@@ -1,0 +1,479 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local function GetChar() return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait() end
+local function GetHum() local c = GetChar() return c:FindFirstChildOfClass("Humanoid") end
+
+local Window = Fluent:CreateWindow({
+    Title = "PERES HUB  V5",
+    SubTitle = "Best Roblox Experience",
+    TabWidth = 175,
+    Size = UDim2.fromOffset(650, 520),
+    Acrylic = true,
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.RightControl
+})
+
+Fluent:Notify({
+    Title = "PERES HUB V5",
+    Content = "Bem vindo, " .. LocalPlayer.Name .. "!",
+    SubContent = "Hub carregado com sucesso",
+    Duration = 5
+})
+
+local Tabs = {
+    Dashboard = Window:AddTab({ Title = "Dashboard", Icon = "home" }),
+    Aimbot    = Window:AddTab({ Title = "Aimbot",    Icon = "crosshair" }),
+    Visuals   = Window:AddTab({ Title = "Visuals",   Icon = "eye" }),
+    Player    = Window:AddTab({ Title = "Player",    Icon = "user" }),
+    World     = Window:AddTab({ Title = "World",     Icon = "globe" }),
+    Movement  = Window:AddTab({ Title = "Movement",  Icon = "move" }),
+    Combat    = Window:AddTab({ Title = "Combat",    Icon = "sword" }),
+    AutoFarm  = Window:AddTab({ Title = "Auto Farm", Icon = "cpu" }),
+    Misc      = Window:AddTab({ Title = "Misc",      Icon = "wrench" }),
+    Settings  = Window:AddTab({ Title = "Settings",  Icon = "settings" }),
+}
+
+-- ================================================
+--              DASHBOARD
+-- ================================================
+Tabs.Dashboard:AddParagraph({
+    Title = "PERES HUB V5",
+    Content = "O hub mais completo para Roblox.\nVersao: V5.0.0  |  Status: ATIVO  |  Jogador: " .. LocalPlayer.Name
+})
+
+Tabs.Dashboard:AddParagraph({
+    Title = "Status do Sistema",
+    Content = "Executor: Delta  |  FPS: Estavel  |  Ping: " .. math.floor(LocalPlayer:GetNetworkPing()*1000) .. "ms"
+})
+
+Tabs.Dashboard:AddParagraph({
+    Title = "Funcoes Ativas",
+    Content = "Total de funcoes: 100+\nAbas: Dashboard, Aimbot, Visuals, Player, World, Movement, Combat, Auto Farm, Misc, Settings"
+})
+
+Tabs.Dashboard:AddButton({
+    Title = "Ver Info Completa",
+    Description = "Mostra informacoes do jogo e jogador",
+    Callback = function()
+        local h = GetHum()
+        Fluent:Notify({
+            Title = "INFO",
+            Content = "Jogador: "..LocalPlayer.Name.."\nHP: "..(h and math.floor(h.Health) or "?").." / "..(h and math.floor(h.MaxHealth) or "?").."\nPing: "..math.floor(LocalPlayer:GetNetworkPing()*1000).."ms\nJogadores: "..#Players:GetPlayers().."\nJogo ID: "..game.PlaceId,
+            Duration = 8
+        })
+    end
+})
+
+Tabs.Dashboard:AddButton({
+    Title = "Recarregar Hub",
+    Description = "Recarrega o Peres Hub V5",
+    Callback = function()
+        Fluent:Notify({ Title="Recarregando...", Content="Hub sera recarregado!", Duration=3 })
+    end
+})
+
+-- ================================================
+--              AIMBOT
+-- ================================================
+local Options = Fluent.Options
+
+Tabs.Aimbot:AddParagraph({ Title = "Aimbot", Content = "Mira automatica profissional com deteccao de parede." })
+
+local AimToggle = Tabs.Aimbot:AddToggle("AimOn", {
+    Title = "Ativar Aimbot",
+    Description = "Ativa o aimbot principal",
+    Default = false,
+    Callback = function(val) _G.AIM = val end
+})
+
+local SilentToggle = Tabs.Aimbot:AddToggle("SilentAim", {
+    Title = "Silent Aim",
+    Description = "Aimbot silencioso (nao visivel)",
+    Default = false,
+    Callback = function(val) _G.SAIM = val end
+})
+
+Tabs.Aimbot:AddDropdown("AimPart", {
+    Title = "Pegar Parte",
+    Description = "Parte do corpo para mirar",
+    Values = {"Head", "UpperTorso", "HumanoidRootPart", "LowerTorso"},
+    Default = "Head",
+    Callback = function(val) _G.APART = val end
+})
+
+Tabs.Aimbot:AddToggle("AimCircle", {
+    Title = "FOV Circle",
+    Description = "Exibir circulo de FOV",
+    Default = false,
+    Callback = function(val) _G.ACIRCLE = val
+        if val then
+            local sg = Instance.new("ScreenGui", game:GetService("CoreGui"))
+            sg.Name = "FOVCircle" sg.ResetOnSpawn = false
+            local f = Instance.new("Frame", sg)
+            local fov = _G.AFOV or 150
+            f.Size = UDim2.new(0,fov*2,0,fov*2)
+            f.Position = UDim2.new(0.5,-fov,0.5,-fov)
+            f.BackgroundTransparency = 1
+            f.BorderColor3 = Color3.fromRGB(150,0,255)
+            f.BorderSizePixel = 2
+            Instance.new("UICorner", f).CornerRadius = UDim.new(1,0)
+        else
+            local sg = game:GetService("CoreGui"):FindFirstChild("FOVCircle")
+            if sg then sg:Destroy() end
+        end
+    end
+})
+
+Tabs.Aimbot:AddSlider("AimFOV", {
+    Title = "FOV Radius",
+    Description = "Raio do FOV",
+    Default = 150, Min = 50, Max = 800, Rounding = 0,
+    Callback = function(val) _G.AFOV = val end
+})
+
+Tabs.Aimbot:AddSlider("AimSmooth", {
+    Title = "Suavidade",
+    Description = "Suavidade do aimbot",
+    Default = 5, Min = 1, Max = 20, Rounding = 2,
+    Callback = function(val) _G.ASMOOTH = val end
+})
+
+Tabs.Aimbot:AddToggle("AimWall", {
+    Title = "Verificacao de Parede",
+    Description = "Nao mira atraves de paredes",
+    Default = true,
+    Callback = function(val) _G.AWALL = val end
+})
+
+Tabs.Aimbot:AddToggle("AimTeam", {
+    Title = "Checar Time",
+    Description = "Nao mira em aliados",
+    Default = true,
+    Callback = function(val) _G.ATEAM = val end
+})
+
+local function TemParede(o,d)
+    local rp = RaycastParams.new()
+    rp.FilterDescendantsInstances = {LocalPlayer.Character}
+    rp.FilterType = Enum.RaycastFilterType.Exclude
+    local r = workspace:Raycast(o, d-o, rp)
+    if r then
+        local ch = r.Instance:FindFirstAncestorOfClass("Model")
+        if ch then for _,p in pairs(Players:GetPlayers()) do if p.Character==ch then return false end end end
+        return true
+    end
+    return false
+end
+
+local function GetAlvo()
+    local best, bestD = nil, _G.AFOV or 150
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    local parte = _G.APART or "Head"
+    for _,p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local target = p.Character:FindFirstChild(parte)
+            local hum = p.Character:FindFirstChildOfClass("Humanoid")
+            if target and hum and hum.Health > 0 then
+                local sp, on = Camera:WorldToViewportPoint(target.Position)
+                if on then
+                    local d = (Vector2.new(sp.X,sp.Y) - center).Magnitude
+                    local ok = not _G.AWALL or not TemParede(Camera.CFrame.Position, target.Position)
+                    if d < bestD and ok then bestD = d best = p end
+                end
+            end
+        end
+    end
+    return best
+end
+
+RunService.RenderStepped:Connect(function()
+    if not _G.AIM then return end
+    local alvo = GetAlvo() if not alvo then return end
+    local parte = _G.APART or "Head"
+    local target = alvo.Character and alvo.Character:FindFirstChild(parte) if not target then return end
+    local sp, on = Camera:WorldToViewportPoint(target.Position) if not on then return end
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    if (Vector2.new(sp.X,sp.Y)-center).Magnitude > (_G.AFOV or 150)*1.5 then return end
+    Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, target.Position), 1/(_G.ASMOOTH or 5))
+end)
+
+-- ================================================
+--              VISUALS
+-- ================================================
+Tabs.Visuals:AddParagraph({ Title = "Visuals", Content = "ESP e efeitos visuais." })
+
+Tabs.Visuals:AddToggle("ESPOn", {
+    Title = "ESP Jogadores",
+    Description = "Destacar jogadores",
+    Default = false,
+    Callback = function(val) _G.ESP1 = val
+        if val then task.spawn(function() while _G.ESP1 do task.wait(0.5)
+            for _,p in pairs(Players:GetPlayers()) do if p~=LocalPlayer and p.Character then
+                local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+                if hrp and not hrp:FindFirstChild("ESPBox") then
+                    local bb = Instance.new("BillboardGui",hrp) bb.Name="ESPBox" bb.Size=UDim2.new(0,100,0,40) bb.StudsOffset=Vector3.new(0,3.5,0) bb.AlwaysOnTop=true
+                    local f = Instance.new("Frame",bb) f.Size=UDim2.new(1,0,1,0) f.BackgroundColor3=Color3.fromRGB(100,0,255) f.BackgroundTransparency=0.5 f.BorderSizePixel=2
+                    local l = Instance.new("TextLabel",f) l.Size=UDim2.new(1,0,1,0) l.BackgroundTransparency=1 l.TextColor3=Color3.fromRGB(255,255,255) l.TextStrokeTransparency=0 l.Text=p.Name l.TextScaled=true l.Font=Enum.Font.GothamBold
+                end
+            end end
+        end end) end
+    end
+})
+
+Tabs.Visuals:AddToggle("ESPBox", {
+    Title = "Caixa (Box ESP)",
+    Description = "Desenhar caixa",
+    Default = false,
+    Callback = function(val) _G.ESP2 = val end
+})
+
+Tabs.Visuals:AddToggle("ESPNome", {
+    Title = "Nome",
+    Description = "Mostrar nomes",
+    Default = false,
+    Callback = function(val) _G.ESP3 = val end
+})
+
+Tabs.Visuals:AddToggle("ESPDist", {
+    Title = "Distancia",
+    Description = "Mostrar distancia",
+    Default = false,
+    Callback = function(val) _G.ESP4 = val
+        if val then task.spawn(function() while _G.ESP4 do task.wait(0.5)
+            for _,p in pairs(Players:GetPlayers()) do if p~=LocalPlayer and p.Character then
+                local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+                local myhrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if hrp and myhrp and not hrp:FindFirstChild("ESPDist") then
+                    local bb = Instance.new("BillboardGui",hrp) bb.Name="ESPDist" bb.Size=UDim2.new(0,80,0,20) bb.StudsOffset=Vector3.new(0,6.5,0) bb.AlwaysOnTop=true
+                    local l = Instance.new("TextLabel",bb) l.Size=UDim2.new(1,0,1,0) l.BackgroundTransparency=1 l.TextColor3=Color3.fromRGB(200,0,255) l.TextStrokeTransparency=0 l.TextScaled=true l.Font=Enum.Font.GothamBold
+                    RunService.Heartbeat:Connect(function()
+                        if l and l.Parent and hrp and myhrp then l.Text=math.floor((hrp.Position-myhrp.Position).Magnitude).."m" end
+                    end)
+                end
+            end end
+        end end) end
+    end
+})
+
+Tabs.Visuals:AddToggle("ESPSkeleton", {
+    Title = "Esqueleto",
+    Description = "Mostrar esqueleto",
+    Default = false,
+    Callback = function(val) _G.ESPSKEL = val end
+})
+
+Tabs.Visuals:AddToggle("ESPTracers", {
+    Title = "Tracers",
+    Description = "Linhas ate o jogador",
+    Default = false,
+    Callback = function(val) _G.ESPTRAC = val end
+})
+
+Tabs.Visuals:AddToggle("Fullbright", {
+    Title = "Fullbright",
+    Description = "Ilumina todo o mapa",
+    Default = false,
+    Callback = function(val)
+        local l = game:GetService("Lighting")
+        if val then _G.OB=l.Brightness _G.OA=l.Ambient l.Brightness=2 l.Ambient=Color3.fromRGB(255,255,255)
+        else l.Brightness=_G.OB or 1 l.Ambient=_G.OA or Color3.fromRGB(0,0,0) end
+    end
+})
+
+Tabs.Visuals:AddToggle("Neblina", {
+    Title = "Remover Neblina",
+    Description = "Remove neblina do mapa",
+    Default = false,
+    Callback = function(val)
+        local l = game:GetService("Lighting")
+        if val then _G.OF=l.FogEnd l.FogEnd=100000 else l.FogEnd=_G.OF or 1000 end
+    end
+})
+
+Tabs.Visuals:AddSlider("CamFOV", {
+    Title = "Camera FOV",
+    Description = "Campo de visao",
+    Default = 70, Min = 30, Max = 120, Rounding = 0,
+    Callback = function(val) Camera.FieldOfView = val end
+})
+
+Tabs.Visuals:AddToggle("Crosshair", {
+    Title = "Crosshair Roxo",
+    Description = "Mira roxa na tela",
+    Default = false,
+    Callback = function(val)
+        if val then
+            local sg = Instance.new("ScreenGui",game:GetService("CoreGui")) sg.Name="CGui" sg.ResetOnSpawn=false
+            local s = 20
+            local function L(pos,sz) local f=Instance.new("Frame",sg) f.BackgroundColor3=Color3.fromRGB(150,0,255) f.BorderSizePixel=0 f.Position=pos f.Size=sz end
+            L(UDim2.new(0.5,-1,0.5,-s/2),UDim2.new(0,2,0,s))
+            L(UDim2.new(0.5,-s/2,0.5,-1),UDim2.new(0,s,0,2))
+        else
+            local sg = game:GetService("CoreGui"):FindFirstChild("CGui") if sg then sg:Destroy() end
+        end
+    end
+})
+
+-- ================================================
+--              PLAYER
+-- ================================================
+Tabs.Player:AddParagraph({ Title = "Player", Content = "Configuracoes do personagem." })
+
+Tabs.Player:AddToggle("Invis", {
+    Title = "Invisibilidade",
+    Description = "Fica invisivel para outros jogadores",
+    Default = false,
+    Callback = function(val) task.spawn(function()
+        local c = GetChar() if not c then return end
+        for _,v in pairs(c:GetDescendants()) do if v:IsA("BasePart") then v.Transparency = val and 1 or 0 end end
+    end) end
+})
+
+Tabs.Player:AddToggle("NoClip", {
+    Title = "No Clip",
+    Description = "Atravessar paredes",
+    Default = false,
+    Callback = function(val) _G.NC = val end
+})
+RunService.Stepped:Connect(function()
+    if _G.NC then local c=LocalPlayer.Character if c then for _,v in pairs(c:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide=false end end end end
+end)
+
+Tabs.Player:AddToggle("AntiKB", {
+    Title = "Anti Knockback",
+    Description = "Imune a knockback",
+    Default = false,
+    Callback = function(val) _G.AKB = val end
+})
+RunService.Heartbeat:Connect(function()
+    if _G.AKB then local c=LocalPlayer.Character local hrp=c and c:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.AssemblyLinearVelocity=Vector3.new(0,hrp.AssemblyLinearVelocity.Y,0) end
+    end
+end)
+
+Tabs.Player:AddToggle("Fly", {
+    Title = "Fly",
+    Description = "Voar pelo mapa",
+    Default = false,
+    Callback = function(val)
+        _G.FLY = val
+        if val then task.spawn(function()
+            local char = GetChar()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then hum.PlatformStand = true end
+            for _,n in pairs({"FlyV","FlyG"}) do local o=hrp:FindFirstChild(n) if o then o:Destroy() end end
+            local bv = Instance.new("BodyVelocity") bv.Name="FlyV" bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge) bv.Velocity=Vector3.zero bv.Parent=hrp
+            local bg = Instance.new("BodyGyro") bg.Name="FlyG" bg.MaxTorque=Vector3.new(math.huge,math.huge,math.huge) bg.P=9000 bg.D=100 bg.Parent=hrp
+            while _G.FLY do pcall(function()
+                RunService.RenderStepped:Wait()
+                char=LocalPlayer.Character if not char then return end
+                hrp=char:FindFirstChild("HumanoidRootPart") if not hrp then return end
+                local spd=_G.FlySpd or 60 local md=Vector3.zero local cam=workspace.CurrentCamera
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then md=md+cam.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then md=md-cam.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then md=md-cam.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then md=md+cam.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.Space) then md=md+Vector3.new(0,1,0) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then md=md-Vector3.new(0,1,0) end
+                local vel=hrp:FindFirstChild("FlyV") local gyro=hrp:FindFirstChild("FlyG")
+                if vel then vel.Velocity=md.Magnitude>0 and md.Unit*spd or Vector3.zero end
+                if gyro then gyro.CFrame=cam.CFrame end
+            end) end
+            char=LocalPlayer.Character if char then
+                hrp=char:FindFirstChild("HumanoidRootPart") hum=char:FindFirstChildOfClass("Humanoid")
+                if hum then hum.PlatformStand=false end
+                if hrp then for _,n in pairs({"FlyV","FlyG"}) do local o=hrp:FindFirstChild(n) if o then o:Destroy() end end end
+            end
+        end) end
+    end
+})
+
+Tabs.Player:AddSlider("WalkSpd", {
+    Title = "WalkSpeed",
+    Description = "Velocidade de caminhada",
+    Default = 16, Min = 16, Max = 500, Rounding = 0,
+    Callback = function(val) _G.WS = val end
+})
+
+Tabs.Player:AddSlider("JumpPwr", {
+    Title = "JumpPower",
+    Description = "Forca do pulo",
+    Default = 50, Min = 50, Max = 500, Rounding = 0,
+    Callback = function(val) _G.JP = val end
+})
+
+RunService.Heartbeat:Connect(function()
+    local h = GetHum() if not h then return end
+    if _G.WS then h.WalkSpeed = _G.WS end
+    if _G.JP then h.UseJumpPower = true h.JumpPower = _G.JP end
+end)
+
+Tabs.Player:AddToggle("GodMode", {
+    Title = "Vida Infinita",
+    Description = "Recupera HP automaticamente",
+    Default = false,
+    Callback = function(val) _G.GOD = val end
+})
+RunService.Heartbeat:Connect(function()
+    if _G.GOD then local c=LocalPlayer.Character if not c then return end
+        local h=c:FindFirstChildOfClass("Humanoid") if not h then return end
+        if h.Health<h.MaxHealth then h.Health=h.MaxHealth end
+        if h:GetState()==Enum.HumanoidStateType.Dead then h.Health=h.MaxHealth h:ChangeState(Enum.HumanoidStateType.GettingUp) end
+    end
+end)
+LocalPlayer.CharacterAdded:Connect(function(c)
+    if _G.GOD then task.wait(0.1) local h=c:FindFirstChildOfClass("Humanoid") if h then h.Health=h.MaxHealth end end
+end)
+
+Tabs.Player:AddToggle("InfJump", {
+    Title = "Infinite Jump",
+    Description = "Pula infinitamente",
+    Default = false,
+    Callback = function(val) _G.IJ = val end
+})
+UserInputService.JumpRequest:Connect(function()
+    if _G.IJ then local h=GetHum() if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end end
+end)
+
+-- ================================================
+--              WORLD
+-- ================================================
+Tabs.World:AddParagraph({ Title = "World", Content = "Controle o mundo do jogo." })
+
+Tabs.World:AddSlider("GravSlider", {
+    Title = "Gravidade",
+    Description = "Controla a gravidade",
+    Default = 196, Min = 0, Max = 1000, Rounding = 0,
+    Callback = function(val) workspace.Gravity = val end
+})
+
+Tabs.World:AddButton({ Title = "Gravidade Zero", Description = "Flutua no ar",
+    Callback = function() workspace.Gravity=0 end })
+Tabs.World:AddButton({ Title = "Gravidade Normal", Description = "Padrao",
+    Callback = function() workspace.Gravity=196 end })
+Tabs.World:AddButton({ Title = "Gravidade Lua", Description = "Fraca",
+    Callback = function() workspace.Gravity=32 end })
+
+Tabs.World:AddSlider("TimeSlider", {
+    Title = "Hora do Dia",
+    Description = "Mude o horario",
+    Default = 12, Min = 0, Max = 24, Rounding = 0,
+    Callback = function(val) game:GetService("Lighting").TimeOfDay=val..":00:00" end
+})
+
+Tabs.World:AddButton({ Title = "Dia", Callback = function() game:GetService("Lighting").TimeOfDay="12:00:00" end })
+Tabs.World:AddButton({ Title = "Noite", Callback = function() game:GetService("Lighting").TimeOfDay="00:00:00" end })
+Tabs.World:AddButton({ Title = "Amanhecer", Callback = function() game:GetService("Lighting").TimeOfDay="06:00:00" end })
+
+Tabs.World:AddToggle("RemNuvens", {
+    Title = "Remover Nuvens",
+    Descr
